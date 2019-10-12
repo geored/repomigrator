@@ -85,4 +85,11 @@ public class RemoteRepository implements Serializable {
 	public void setUrl(String url) {
 		this.url = url;
 	}
+
+	@Override
+	public String toString() {
+		return "RemoteRepository{" + "type:" + type + ", key:" + key + ", disabled:" + disabled + ", host:" + host + ", port:" + port + ", packageType:" + packageType + ", name:" + name + ", url:" + url + ", metadata:" + metadata + '}';
+	}
+	
+	
 }

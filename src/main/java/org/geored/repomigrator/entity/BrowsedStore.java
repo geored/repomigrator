@@ -9,14 +9,15 @@ import java.util.List;
 
 public class BrowsedStore {
 
-	private String storeKey;
-	private String path;
-	private String storeBrowseUrl;
-	private String storeContentUrl;
-	private String baseBrowseUrl;
-	private String baseContentUrl;
-	private List<String> sources;
-	private List<ListingUrls> listingUrls;
+	String storeKey;
+	String path;
+	String storeBrowseUrl;
+	String storeContentUrl;
+	String baseBrowseUrl;
+	String baseContentUrl;
+	
+	List<String> sources;
+	List<ListingUrls> listingUrls;
 
 	public String getStoreKey() {
 		return storeKey;
@@ -80,6 +81,11 @@ public class BrowsedStore {
 
 	public void setListingUrls(List<ListingUrls> listingUrls) {
 		this.listingUrls = listingUrls;
+	}
+
+	@Override
+	public String toString() {
+		return "BrowsedStore{" + "storeKey:" + storeKey + ", path:" + path + ", storeBrowseUrl:" + storeBrowseUrl + ", storeContentUrl:" + storeContentUrl + ", baseBrowseUrl:" + baseBrowseUrl + ", baseContentUrl:" + baseContentUrl + ", sources:" + sources + ", listingUrls:" + listingUrls + '}';
 	}
 	
 	

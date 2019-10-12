@@ -8,9 +8,9 @@ import java.util.List;
  */
 public class ListingUrls {
 
-	private String path;
-	private String listingUrl;
-	private List<String> sources;
+	String path;
+	String listingUrl;
+	List<String> sources;
 
 	public String getPath() {
 		return path;

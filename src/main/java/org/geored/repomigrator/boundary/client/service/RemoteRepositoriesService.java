@@ -15,38 +15,44 @@ import org.geored.repomigrator.entity.BrowsedStore;
 
 @Path("/api")
 @RegisterRestClient
+@Produces(MediaType.APPLICATION_JSON)
+@ClientHeaderParam(name="Authorization",value = "{createBasicAuthHeaderValue}")
 public interface RemoteRepositoriesService {
 
 
-    @GET // test resource call
-    @ClientHeaderParam(name="Authorization",value = "{createBasicAuthHeaderValue}")
-    @Path("/admin/stores/maven/remote")
-    @Produces(MediaType.APPLICATION_JSON)
-    Map<String,List<RemoteRepository>> getRemoteRepos(@HeaderParam("Authorization") String auth);
+    @GET
+    @Path("/admin/stores/{packageType}/remote")
+    Map<String,List<RemoteRepository>> getRemoteRepos(
+	  @PathParam("packageType") String packageType,
+	  @HeaderParam("Authorization") String auth);
 
-    @GET // test resource call
-    @ClientHeaderParam(name = "Authorization",value = "{createBasicAuthHeaderValue}")
-    @Path("/admin/stores/maven/remote/{name}")
-    RemoteRepository getRemoteByName(@PathParam("name") String name,@HeaderParam("Authorization") String auth);
+    @GET
+    @Path("/admin/stores/{packageType}/remote/{name}")
+    RemoteRepository getRemoteByName(
+	  @PathParam("packageType") String packageType,
+	  @PathParam("name") String name,
+	  @HeaderParam("Authorization") String auth);
 	
-	@GET // test resource call
-	@ClientHeaderParam(name = "Authorization",value = "{createBasicAuthHeaderValue}")
-	@Path("/admin/stores/maven/remote/{name}")
-	@Produces(MediaType.APPLICATION_JSON)
-	CompletionStage<RemoteRepository> getByNameAsync(@PathParam("name") String name,@HeaderParam("Authorization") String auth);
+	@GET
+	@Path("/admin/stores/{packageType}/remote/{name}")
+	CompletionStage<RemoteRepository> getByNameAsync(
+	  @PathParam("packageType") String packageType,
+	  @PathParam("name") String name,
+	  @HeaderParam("Authorization") String auth);
 	
-	@GET // /api/stats/all-endpoints
-	@ClientHeaderParam(name = "Authorization",value = "{createBasicAuthHeaderValue}")
+	@GET
 	@Path("/stats/all-endpoints")
-	@Produces(MediaType.APPLICATION_JSON)
-	Map<String,ArtifactStore> getAllArtifactStoresEndpoints();
+	Map<String,ArtifactStore> getAllArtifactStoresEndpoints(
+	  @HeaderParam("Authorization") String auth);
 	
 	
-	@GET //api/browse/npm/group/build-81
-	@ClientHeaderParam(name = "Authorization",value = "{createBasicAuthHeaderValue}")
+	@GET //api/browse/npm/group/build-81 <- example
 	@Path("/browse/{packageType}/{type}/{name}")
-	@Produces(MediaType.APPLICATION_JSON)
-	BrowsedStore browseEndpointStores(@PathParam("packageType") String packageType,@PathParam("type") String type,@PathParam("name") String name,@HeaderParam("Authorization") String auth);
+	BrowsedStore browseEndpointStores(
+	  @PathParam("packageType") String packageType,
+	  @PathParam("type") String type,
+	  @PathParam("name") String name,
+	  @HeaderParam("Authorization") String auth);
 	
 	
 	

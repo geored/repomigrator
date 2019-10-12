@@ -7,24 +7,24 @@ import java.util.Map;
 
 public class ValidatedArtifactStore implements Serializable {
 
-    private boolean valid;
-    private String repositoryUrl;
+    boolean valid;
+    String repositoryUrl;
 
-    private String storeKey;
-    private Map<String,String> errors;
+    String storeKey;
+    Map<String,String> errors;
 
 
-    private ValidatedArtifactStore() {
+    ValidatedArtifactStore() {
     }
 
 
     public static class Builder {
 
-        private boolean valid;
-        private String repositoryUrl;
+        boolean valid;
+        String repositoryUrl;
 
-        private String storeKey;
-        private Map<String,String> errors;
+        String storeKey;
+        Map<String,String> errors;
 
         public Builder(String storeKey) {
 

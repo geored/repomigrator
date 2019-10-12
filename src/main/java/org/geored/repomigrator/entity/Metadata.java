@@ -3,7 +3,9 @@ package org.geored.repomigrator.entity;
 import java.io.Serializable;
 
 public class Metadata implements Serializable {
-    String changelog;
+    
+	
+	String changelog;
 
     public String getChangelog() {
         return changelog;
@@ -12,4 +14,11 @@ public class Metadata implements Serializable {
     public void setChangelog(String changelog) {
         this.changelog = changelog;
     }
+
+	@Override
+	public String toString() {
+		return "Metadata{" + "changelog:" + changelog + '}';
+	}
+	
+	
 }
