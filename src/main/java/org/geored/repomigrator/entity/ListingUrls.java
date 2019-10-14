@@ -1,12 +1,13 @@
 package org.geored.repomigrator.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author gorgigeorgievski
  */
-public class ListingUrls {
+public class ListingUrls implements Serializable{
 
 	String path;
 	String listingUrl;
@@ -35,6 +36,12 @@ public class ListingUrls {
 	public void setSources(List<String> sources) {
 		this.sources = sources;
 	}
+
+	@Override
+	public String toString() {
+		return "{" + "path:" + path + ", listingUrl:" + listingUrl + ", sources:" + sources + "}";
+	}
+	
 	
 	
 }

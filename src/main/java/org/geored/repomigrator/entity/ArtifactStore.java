@@ -71,6 +71,11 @@ public class ArtifactStore implements Serializable {
 	public void setResourceUrl(String resourceUrl) {
 		this.resourceUrl = resourceUrl;
 	}
+
+	@Override
+	public String toString() {
+		return "{" + "packageType:" + packageType + ", name:" + name + ", group:" + group + ", storeKey:" + storeKey + ", storeType:" + storeType + ", key:" + key + ", resourceUrl:" + resourceUrl + "}";
+	}
 	
 	
 	

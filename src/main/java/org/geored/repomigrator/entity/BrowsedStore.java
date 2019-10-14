@@ -1,5 +1,6 @@
 package org.geored.repomigrator.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -7,7 +8,7 @@ import java.util.List;
  * @author gorgigeorgievski
  */
 
-public class BrowsedStore {
+public class BrowsedStore implements Serializable {
 
 	String storeKey;
 	String path;
@@ -85,7 +86,7 @@ public class BrowsedStore {
 
 	@Override
 	public String toString() {
-		return "BrowsedStore{" + "storeKey:" + storeKey + ", path:" + path + ", storeBrowseUrl:" + storeBrowseUrl + ", storeContentUrl:" + storeContentUrl + ", baseBrowseUrl:" + baseBrowseUrl + ", baseContentUrl:" + baseContentUrl + ", sources:" + sources + ", listingUrls:" + listingUrls + '}';
+		return "{" + "storeKey:" + storeKey + ", path:" + path + ", storeBrowseUrl:" + storeBrowseUrl + ", storeContentUrl:" + storeContentUrl + ", baseBrowseUrl:" + baseBrowseUrl + ", baseContentUrl:" + baseContentUrl + ", sources:" + sources + ", listingUrls:" + listingUrls + "}";
 	}
 	
 	

@@ -17,7 +17,7 @@ public class Metadata implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Metadata{" + "changelog:" + changelog + '}';
+		return "{" + "changelog:" + changelog + "}";
 	}
 	
 	

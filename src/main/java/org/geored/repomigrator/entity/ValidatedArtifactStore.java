@@ -90,4 +90,11 @@ public class ValidatedArtifactStore implements Serializable {
     public void setErrors(Map<String, String> errors) {
         this.errors = errors;
     }
+
+	@Override
+	public String toString() {
+		return "{" + "valid:" + valid + ", repositoryUrl:" + repositoryUrl + ", storeKey:" + storeKey + ", errors:" + errors + "}";
+	}
+	
+	
 }

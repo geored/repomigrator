@@ -7,6 +7,6 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public enum ProcessLifecycle {
 	
-	START,RUNNING,WAITING,STOPED
+	START,RUNNING,WAITING,STOPED,END
 	
 }
