@@ -16,13 +16,6 @@ public class DefaultResponseFilter implements ClientResponseFilter {
 	@Override
 	public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
 
-//		logger.log(Level.INFO , 
-//		  "Req Headers: {0} | Res Headers: {1} | {2}", 
-//		  new Object[]{ 
-//			  requestContext.getHeaders(), 
-//			  responseContext.getHeaders() ,
-//			  Json.createReader( responseContext.getEntityStream() )
-//		  });
 	}
 	
 }

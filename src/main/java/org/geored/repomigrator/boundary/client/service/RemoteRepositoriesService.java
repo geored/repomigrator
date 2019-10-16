@@ -8,6 +8,7 @@ import org.geored.repomigrator.entity.RemoteRepository;
 import javax.ws.rs.*;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import javax.ws.rs.core.MediaType;
@@ -20,7 +21,7 @@ import org.geored.repomigrator.entity.ArtifactStore;
 import org.geored.repomigrator.entity.BrowsedStore;
 
 @Path("/api")
-@RegisterRestClient(baseUri = "http://indy-admin-master-devel.psi.redhat.com")
+@RegisterRestClient(baseUri = "http://indy-admin-stage.psi.redhat.com")
 @Produces(MediaType.APPLICATION_JSON)
 @ClientHeaderParam(name="Authorization",value = "{createBasicAuthHeaderValue}")
 public interface RemoteRepositoriesService {
@@ -47,9 +48,9 @@ public interface RemoteRepositoriesService {
 	  @HeaderParam("Authorization") String auth);
 	
 	
-	@GET // http://indy-stage.psi.redhat.com/api/browse/{packageType}/{type}/{name}/{path: (.*)}
+	@GET
 	@Path("/browse/{packageType}/{type}/{name}")
-	CompletionStage<BrowsedStore> browseDirectoryAsync(
+	BrowsedStore browseDirectoryAsync(
 	  @PathParam("packageType") String packageType,
 	  @PathParam("type") String type,
 	  @PathParam("name") String name,
@@ -59,11 +60,9 @@ public interface RemoteRepositoriesService {
 	@Path("/stats/all-endpoints")
 	Map<String,ArtifactStore> getAllArtifactStoresEndpoints(
 	  @HeaderParam("Authorization") String auth);
-	
-	@Timed
-	@Retry(maxRetries = 2)
-	@CircuitBreaker(failureRatio = 0.5,requestVolumeThreshold = 6)
-	@GET //api/browse/npm/group/build-81 <- example
+
+
+	@GET
 	@Path("/browse/{packageType}/{type}/{name}")
 	BrowsedStore browseEndpointStores(
 	  @PathParam("packageType") String packageType,
