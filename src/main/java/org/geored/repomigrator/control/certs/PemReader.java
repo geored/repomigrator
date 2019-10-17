@@ -108,9 +108,6 @@ public final class PemReader {
 		return keyStore;
 	}
 
-//    private static List<X509Certificate> readCertificateChain(File certificateChainFile)
-//            throws IOException, GeneralSecurityException
-//    {
 	private static List<X509Certificate> readCertificateChain(String certificateChainFile)
 	  throws IOException, GeneralSecurityException {
 //        String contents = readFile(certificateChainFile);

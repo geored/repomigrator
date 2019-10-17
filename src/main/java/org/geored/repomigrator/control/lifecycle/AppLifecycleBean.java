@@ -17,11 +17,11 @@ public class AppLifecycleBean {
 	Event<ProcessLifecycle> appLifecycleEvent;
 
 	void onStart(@Observes StartupEvent event) {
-		logger.log(Level.INFO, "\n\t\t\t === INIT @ {0} ===", LocalDateTime.now());
+		logger.log(Level.INFO, "\n\t\t\t === [[APP.INIT]] @ {0} ===", LocalDateTime.now());
 	}
 
 	void onStop(@Observes ShutdownEvent event) {
-		logger.log(Level.INFO, "\n\t\t\t === SHUTDOWN @ {0} ===", LocalDateTime.now());
+		logger.log(Level.INFO, "\n\t\t\t === [[SHUTDOWN]] @ {0} ===", LocalDateTime.now());
 //		appLifecycleEvent.fire(ProcessLifecycle.FINISH);
 	}
 

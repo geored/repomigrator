@@ -70,20 +70,20 @@ public class RemoteRepositoriesCache implements Serializable {
 			try {
 				file.createNewFile();
 			} catch (SecurityException | IOException e) {
-				logger.log(Level.WARNING, "!!! [create] IOException | {0}",e.getMessage());
+				logger.log(Level.WARNING, "[[CREATE]] IOException | {0}",e.getMessage());
 			}
 		} 
 		if(file.length()>0) {
 			
 			try (ObjectInputStream inObject = new ObjectInputStream(new BufferedInputStream(new FileInputStream(fileName)))) {
-				logger.log(Level.INFO,"\n [READING FROM FILE] {0}",file.getCanonicalPath());
+				logger.log(Level.INFO,"\n [[READING.FROM.FILE]] {0}",file.getCanonicalPath());
 				remoteRepos = (Map<String, RemoteRepository>) inObject.readObject();
 				cacheLifecycle.fire(CacheLifecycle.LOADED);
 			} 
-			catch (FileNotFoundException ffe) {logger.log(Level.WARNING, "!!! [reading] FileNotFound | {0}",ffe.getMessage());} 
-			catch (IOException | ClassNotFoundException e) {logger.log(Level.WARNING, "!!! [reading] IOException | {0}",e.getMessage());}
+			catch (FileNotFoundException ffe) {logger.log(Level.WARNING, "[[READING]] FileNotFound | {0}",ffe.getMessage());}
+			catch (IOException | ClassNotFoundException e) {logger.log(Level.WARNING, "[[READING]] IOException | {0}",e.getMessage());}
 		} else {
-			logger.log(Level.INFO,"\n [READING FROM REST CLIENT URL] {0}", url);
+			logger.log(Level.INFO,"[[READING.FROM.REST.CLIENT.URL]] {0}", url);
 			
 			RemoteRepositoriesService restClient = getRestClient(url);
 			
@@ -91,20 +91,20 @@ public class RemoteRepositoriesCache implements Serializable {
 			  .stream()
 //			  .filter(repo -> !repo.getDisabled())
 			  .filter(repo -> { 
-				  logger.log(Level.INFO,"\n [FILTER] {0} protocol:{1} disabled:{2}" ,new Object[] { repo.getUrl() , getUrl(url).getProtocol(), repo.getDisabled() });
+				  logger.log(Level.INFO,"\n [[FILTER]] {0} protocol:{1} disabled:{2}" ,new Object[] { repo.getUrl() , getUrl(url).getProtocol(), repo.getDisabled() });
 				  return getUrl(repo.getUrl()) != null && ( getUrl(repo.getUrl()).getProtocol().equalsIgnoreCase("http") || repo.getDisabled());
 			  })
-			  .forEach((repo) -> { setRepo(repo.getName(), repo);logger.log(Level.INFO,"\n [ADDED] {0}",repo.getUrl()); });
+			  .forEach((repo) -> { setRepo(repo.getName(), repo);logger.log(Level.INFO,"\n [[ADDED]] {0}",repo.getUrl()); });
 			
 			
 			restClient.getRemoteRepos("npm", auth).get("items")
 			  .stream()
 //			  .filter(repo -> !repo.getDisabled())
 			  .filter(repo -> {
-				  logger.log(Level.INFO,"\n [FILTER] {0} protocol:{1} disabled:{2}" ,new Object[] { repo.getUrl() , getUrl(url).getProtocol(), repo.getDisabled() });
+				  logger.log(Level.INFO,"\n [[FILTER]] {0} protocol:{1} disabled:{2}" ,new Object[] { repo.getUrl() , getUrl(url).getProtocol(), repo.getDisabled() });
 				  return getUrl(repo.getUrl()) != null && ( getUrl(repo.getUrl()).getProtocol().equalsIgnoreCase("http") || repo.getDisabled());
 			  })
-			  .forEach((repo) -> { setRepo(repo.getName(), repo); logger.log(Level.INFO,"\n [ADDED] {0}",repo.getUrl()); })
+			  .forEach((repo) -> { setRepo(repo.getName(), repo); logger.log(Level.INFO,"\n [[ADDED]] {0}",repo.getUrl()); })
 			  ;
 			cacheLifecycle.fire(CacheLifecycle.LOADED);
 		}
@@ -121,7 +121,7 @@ public class RemoteRepositoriesCache implements Serializable {
 				outObject.writeObject(remoteRepos);
 			}
 		} catch (IOException ex) {
-			logger.log(Level.WARNING, "!!! [writing] IOException | {0}", ex.getMessage());
+			logger.log(Level.WARNING, "[[WRITING]] IOException | {0}", ex.getMessage());
 		}
 
 	}
@@ -140,7 +140,7 @@ public class RemoteRepositoriesCache implements Serializable {
 			restClient = RestClientBuilder.newBuilder()
 			  .baseUrl(new URL(url)).build(RemoteRepositoriesService.class);
 		} catch (MalformedURLException ex) {
-			logger.log(Level.WARNING, "!!! MailformedURLException | {0}", ex.getMessage());
+			logger.log(Level.WARNING, "[[REST.CLIENT.BUILDER]] MailformedURLException | {0}", ex.getMessage());
 		}
 		return restClient;
 	}
@@ -149,7 +149,7 @@ public class RemoteRepositoriesCache implements Serializable {
 		try {
 			return RestClientBuilder.newBuilder().baseUrl(new URL(url));
 		} catch (MalformedURLException ex) {
-			logger.log(Level.WARNING, "!!! MailformedURLException | {0}", ex.getMessage());
+			logger.log(Level.WARNING, "[[REST.CLIENT.BUILDER]] MailformedURLException | {0}", ex.getMessage());
 		}
 		return null;
 	}
@@ -158,7 +158,7 @@ public class RemoteRepositoriesCache implements Serializable {
 		try {
 			return new URL(url);
 		} catch (MalformedURLException ex) {
-			logger.log(Level.WARNING, "!!! MailformedURLException | {0}", ex.getMessage());
+			logger.log(Level.WARNING, "[[REST.CLIENT.FILTER]] MailformedURLException | {0}", ex.getMessage());
 		}
 		return null;
 	}

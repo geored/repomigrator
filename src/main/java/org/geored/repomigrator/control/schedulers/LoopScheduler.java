@@ -68,7 +68,7 @@ public class LoopScheduler {
 	@Scheduled(every = "120s")
 	public void increase(ScheduledExecution se) {
 
-		logger.log(Level.INFO, "-- Cache Size: {0}", cache.getRemoteRepos().size());
+		logger.log(Level.INFO, "[[CACHE.SIZE]] {0}", cache.getRemoteRepos().size());
 
 		cache.getRemoteRepos().values().stream()
 			.filter(repo -> !repo.getDisabled())
@@ -97,7 +97,7 @@ public class LoopScheduler {
 			restClient = RestClientBuilder.newBuilder()
 			  .baseUrl(new URL(url)).build(RemoteRepositoriesService.class);
 		} catch (MalformedURLException ex) {
-			logger.log(Level.WARNING, " | MailformedURLException | {0}", LocalDateTime.now());
+			logger.log(Level.WARNING, "[[REST.CLIENT.EXCEPTION]] | MailformedURLException | {0}", LocalDateTime.now());
 		}
 		return restClient;
 	}
@@ -106,7 +106,7 @@ public class LoopScheduler {
 		try {
 			return RestClientBuilder.newBuilder().baseUrl(new URL(url));
 		} catch (MalformedURLException ex) {
-			logger.log(Level.WARNING, "!!! MailformedURLException | {0}", ex.getMessage());
+			logger.log(Level.WARNING, "[[REST.CLIENT.EXCEPTION]] | MailformedURLException | {0}", ex.getMessage());
 		}
 		return null;
 	}
@@ -126,17 +126,17 @@ public class LoopScheduler {
 		try {
 			logger.log(Level.INFO, "[[PROCESSING.STORE]] {0}", repo.get().getStoreKey());
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "[[PRINT.PROCESSING.STORE]] | InterruptedException | {0}", e.getMessage());
 		} catch (ExecutionException e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "[[PRINT.PROCESSING.STORE]] | ExecutionException | {0}", e.getMessage());
 		}
 		return repo;
 	}
 
 	String getContent(String url) {
-		// base case
+		//  	!url.equals("")
 		if(url != null && !url.endsWith("/")) {
-			logger.log(Level.INFO, "[[WEB.CLIENT.CONTENT_URL]] url:{0}", url);
+			logger.log(Level.INFO, "[[WEB.CLIENT.CONTENT.URL]] url:{0}", url);
 			return url;
 		}
 		Client client = null;
@@ -148,7 +148,7 @@ public class LoopScheduler {
 			client
 				.target(url)
 				.request(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Basic Z2dlb3JnaWU6R2Vvcmd5QFJlZGhhdDE=");
+				.header("Authorization", auth);
 			Response response = clientInvocation.get(Response.class);
 			if (response.getStatus() >= 400) {
 				return "";
@@ -177,9 +177,9 @@ public class LoopScheduler {
 		try {
 			return cbs.get().getListingUrls() == null ? false : true ;
 		} catch (InterruptedException e) {
-			logger.log(Level.WARNING, "!!! InterruptedException | {0}", e.getMessage());
+			logger.log(Level.WARNING, "[[FILTER.PROCESSING.STORE]] | InterruptedException | {0}", e.getMessage());
 		} catch (ExecutionException e) {
-			logger.log(Level.WARNING, "!!! ExecutionException | {0}", e.getMessage());
+			logger.log(Level.WARNING, "[[FILTER.PROCESSING.STORE]] | ExecutionException | {0}", e.getMessage());
 		}
 		return true;
 	}

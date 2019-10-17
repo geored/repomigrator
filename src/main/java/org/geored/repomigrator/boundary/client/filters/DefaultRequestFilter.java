@@ -15,8 +15,7 @@ public class DefaultRequestFilter implements ClientRequestFilter  {
 
 	@Override
 	public void filter(ClientRequestContext requestContext) throws IOException {
-//		logger.log(Level.INFO , 
-//		  "HTTP [{0}] | {1}", new Object[]{ requestContext.getMethod(), requestContext.getUri() });
+
 	}
 	
 }

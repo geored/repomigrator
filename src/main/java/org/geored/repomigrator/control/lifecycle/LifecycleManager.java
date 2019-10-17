@@ -22,27 +22,21 @@ public class LifecycleManager {
 	void listenToProcessEvent(@Observes ProcessLifecycle processLifecycle) {
 		switch(processLifecycle) {
 			case START:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Process Started =");
+				logger.log(Level.INFO, "= [[PROCESS.STARTED]] =");
 				break;
 			case END:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Process Ended =");
+				logger.log(Level.INFO, "= [[PROCESS.END]] =");
 				break;
 			case RUNNING:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Process Running =");
+				logger.log(Level.INFO, "= [[PROCESS.RUNNING]] =");
 				break;
 			case STOPED:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Process Stoped =");
+				logger.log(Level.INFO, "= [[PROCESS.STOPED]] =");
 				break;
 			case WAITING:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Process Waiting =");
+				logger.log(Level.INFO, "= [[PROCESS.WAITING]] =");
 				break;
 			default:
-				// Write to EventSource File
 				break;
 		}
 	}
@@ -50,19 +44,15 @@ public class LifecycleManager {
 	void listenToCacheEvent(@Observes CacheLifecycle cacheLifecycle) {
 		switch(cacheLifecycle) {
 			case LOADING:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Cache Loading =");
+				logger.log(Level.INFO, "= [[CACHE.LOADING]] =");
 				break;
 			case PROCESSED:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Cache Proccessing =");
+				logger.log(Level.INFO, "= [[CACHE.PROCESSED]] =");
 				break;
 			case LOADED:
-				// Write to EventSource File
-				logger.log(Level.INFO, "= Cache Loaded =");
+				logger.log(Level.INFO, "= [[CACHE.LOADED]] =");
 				break;
 			default:
-				// Write to EventSource File
 				break;
 		}
 	}
