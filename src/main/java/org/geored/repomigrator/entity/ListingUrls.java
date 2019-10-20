@@ -13,6 +13,16 @@ public class ListingUrls implements Serializable{
 	String listingUrl;
 	List<String> sources;
 
+	String contentUrl;
+
+	public String getContentUrl() {
+		return contentUrl;
+	}
+
+	public void setContentUrl(String contentUrl) {
+		this.contentUrl = contentUrl;
+	}
+
 	public String getPath() {
 		return path;
 	}
@@ -39,7 +49,7 @@ public class ListingUrls implements Serializable{
 
 	@Override
 	public String toString() {
-		return "{" + "path:" + path + ", listingUrl:" + listingUrl + ", sources:" + sources + "}";
+		return "{" + "path:" + path + ", listingUrl:" + listingUrl + ", sources:" + sources + ",contentUrl:" + contentUrl+ "}";
 	}
 	
 	

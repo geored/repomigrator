@@ -1,37 +1,28 @@
 package org.geored.repomigrator.control.cache;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.geored.repomigrator.boundary.client.service.RemoteRepositoriesService;
-import org.geored.repomigrator.control.certs.PemReader;
 import org.geored.repomigrator.control.lifecycle.CacheLifecycle;
 import org.geored.repomigrator.control.lifecycle.ProcessLifecycle;
 import org.geored.repomigrator.control.lifecycle.events.ProcessMigrationEvent;
 import org.geored.repomigrator.entity.BrowsedStore;
 import org.geored.repomigrator.entity.RemoteRepository;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class RemoteRepositoriesCache implements Serializable {
@@ -46,6 +37,15 @@ public class RemoteRepositoriesCache implements Serializable {
 	
 	// Browsed Remote Repositories Cache
 	public static Map<String, BrowsedStore> browsedRepos = new ConcurrentHashMap<>();
+
+//	CachedObservable<ListingUrls> listingUrlsCachedObservable = CachedObservable.
+
+	// Listing Urls Cache
+	public static Map<String, String> listedUrls = new ConcurrentHashMap<>();
+
+	public static List<BrowsedStore> browsedStores = new ArrayList<>();
+
+	public static List<String> contentUrls = new ArrayList<>();
 
 	@Inject
 	@ConfigProperty(name = "redhat.indy.cache.rrc")
@@ -72,7 +72,7 @@ public class RemoteRepositoriesCache implements Serializable {
 			} catch (SecurityException | IOException e) {
 				logger.log(Level.WARNING, "[[CREATE]] IOException | {0}",e.getMessage());
 			}
-		} 
+		}
 		if(file.length()>0) {
 			
 			try (ObjectInputStream inObject = new ObjectInputStream(new BufferedInputStream(new FileInputStream(fileName)))) {
@@ -87,7 +87,7 @@ public class RemoteRepositoriesCache implements Serializable {
 			
 			RemoteRepositoriesService restClient = getRestClient(url);
 			
-			restClient.getRemoteRepos("maven", auth).get("items")
+			restClient.getRemoteRepos("maven").get("items")
 			  .stream()
 //			  .filter(repo -> !repo.getDisabled())
 			  .filter(repo -> { 
@@ -97,7 +97,7 @@ public class RemoteRepositoriesCache implements Serializable {
 			  .forEach((repo) -> { setRepo(repo.getName(), repo);logger.log(Level.INFO,"\n [[ADDED]] {0}",repo.getUrl()); });
 			
 			
-			restClient.getRemoteRepos("npm", auth).get("items")
+			restClient.getRemoteRepos("npm").get("items")
 			  .stream()
 //			  .filter(repo -> !repo.getDisabled())
 			  .filter(repo -> {
@@ -124,6 +124,39 @@ public class RemoteRepositoriesCache implements Serializable {
 			logger.log(Level.WARNING, "[[WRITING]] IOException | {0}", ex.getMessage());
 		}
 
+	}
+
+
+	public static List<BrowsedStore> getBrowsedStores() {
+		return browsedStores;
+	}
+
+	public static void setBrowsedStores(List<BrowsedStore> browsedStores) {
+		RemoteRepositoriesCache.browsedStores = browsedStores;
+	}
+
+	public static List<String> getContentUrls() {
+		return contentUrls;
+	}
+
+	public static void setContentUrls(List<String> contentUrls) {
+		RemoteRepositoriesCache.contentUrls = contentUrls;
+	}
+
+	public static void addContentUrl(String url) {
+		RemoteRepositoriesCache.contentUrls.add(url);
+	}
+
+	public static Map<String, String> getListedUrls() {
+		return listedUrls;
+	}
+
+	public static void setListedUrls(Map<String, String> listedUrls) {
+		RemoteRepositoriesCache.listedUrls = listedUrls;
+	}
+
+	public static void setListedUrl(String k, String v) {
+		RemoteRepositoriesCache.listedUrls.put(k, v);
 	}
 
 	public Map<String, RemoteRepository> getRemoteRepos() {

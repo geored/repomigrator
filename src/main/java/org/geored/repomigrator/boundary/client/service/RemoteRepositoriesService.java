@@ -1,11 +1,16 @@
 package org.geored.repomigrator.boundary.client.service;
 
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.annotation.ClientHeaderParam;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.geored.repomigrator.entity.RemoteRepository;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,58 +26,70 @@ import org.geored.repomigrator.entity.ArtifactStore;
 import org.geored.repomigrator.entity.BrowsedStore;
 
 @Path("/api")
-@RegisterRestClient(baseUri = "http://indy-admin-stage.psi.redhat.com")
+@RegisterRestClient(baseUri = "")
 @Produces(MediaType.APPLICATION_JSON)
-@ClientHeaderParam(name="Authorization",value = "{createBasicAuthHeaderValue}")
+@ClientHeaderParam(name="Authorization",value = "")
 public interface RemoteRepositoriesService {
 
 
     @GET
     @Path("/admin/stores/{packageType}/remote")
     Map<String,List<RemoteRepository>> getRemoteRepos(
-	  @PathParam("packageType") String packageType,
-	  @HeaderParam("Authorization") String auth);
+	  @PathParam("packageType") String packageType);
+
+	@GET
+	@Path("/admin/stores/{packageType}/remote")
+	CompletionStage<Map<String,List<RemoteRepository>>> getRemoteReposAsync(
+	@PathParam("packageType") String packageType);
 
     @GET
     @Path("/admin/stores/{packageType}/remote/{name}")
     RemoteRepository getRemoteByName(
 	  @PathParam("packageType") String packageType,
-	  @PathParam("name") String name,
-	  @HeaderParam("Authorization") String auth);
+	  @PathParam("name") String name);
 	
 	@GET
 	@Path("/admin/stores/{packageType}/remote/{name}")
 	CompletionStage<RemoteRepository> getByNameAsync(
 	  @PathParam("packageType") String packageType,
-	  @PathParam("name") String name,
-	  @HeaderParam("Authorization") String auth);
-	
-	
+	  @PathParam("name") String name);
+
 	@GET
 	@Path("/browse/{packageType}/{type}/{name}")
-	BrowsedStore browseDirectoryAsync(
+	CompletionStage<BrowsedStore> browseDirectoryAsync(
 	  @PathParam("packageType") String packageType,
 	  @PathParam("type") String type,
-	  @PathParam("name") String name,
-	  @HeaderParam("Authorization") String auth);
+	  @PathParam("name") String name);
 	
 	@GET
 	@Path("/stats/all-endpoints")
-	Map<String,ArtifactStore> getAllArtifactStoresEndpoints(
-	  @HeaderParam("Authorization") String auth);
+	Map<String,ArtifactStore> getAllArtifactStoresEndpoints();
 
+	@GET
+	@Path("/browse/{packageType}/{type}")
+	List<BrowsedStore> getBrowsedStores(
+		@PathParam("packageType") String packageType,
+		@PathParam("type") String type
+	);
 
 	@GET
 	@Path("/browse/{packageType}/{type}/{name}")
-	BrowsedStore browseEndpointStores(
-	  @PathParam("packageType") String packageType,
-	  @PathParam("type") String type,
-	  @PathParam("name") String name,
-	  @HeaderParam("Authorization") String auth);
-	
-	
-	
-    default String createBasicAuthHeaderValue(String auth) {
+	BrowsedStore getBrowsedStore(
+		@PathParam("packageType") String packageType,
+		@PathParam("type") String type,
+		@PathParam("name") String name
+	);
+
+	@GET
+	@Path("/browse/{packageType}/remote/{name}")
+	CompletionStage<BrowsedStore> getBrowsedStoreByPackageType(
+		@PathParam("packageType") String packageType,
+		@PathParam("name") String name
+	);
+
+
+
+	default String createBasicAuthHeaderValue(String auth) {
         return auth;
     }
 }

@@ -71,6 +71,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-scheduler</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.reactivex</groupId>
+      <artifactId>rxjava-reactive-streams</artifactId>
+      <version>1.2.1</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
