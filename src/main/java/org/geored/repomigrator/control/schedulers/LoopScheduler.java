@@ -8,38 +8,34 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.vertx.reactivex.core.Vertx;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.geored.repomigrator.control.KnownConstants;
 import org.geored.repomigrator.control.cache.RemoteRepositoriesCache;
 import org.geored.repomigrator.boundary.client.service.RemoteRepositoriesService;
 import org.geored.repomigrator.control.lifecycle.ProcessLifecycle;
 import org.geored.repomigrator.entity.BrowsedStore;
 import org.geored.repomigrator.entity.ListingUrls;
 import org.geored.repomigrator.entity.RemoteRepository;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 
 import static org.geored.repomigrator.control.KnownConstants.AUTHORIZATION;
 
@@ -64,32 +60,26 @@ public class LoopScheduler {
 
 	@Inject Event<ProcessLifecycle> processEvent;
 
-    @Resource()
-    ManagedExecutorService mes;
+	@Inject
+	Vertx vertx;
 
 
-    @Scheduled(every = "10000s")
+//    @Scheduled(every = "10000s")
 	public void increase(ScheduledExecution se) {
+
 		logger.log(Level.INFO, "[[CACHE.SIZE]] {0}", cache.getRemoteRepos().size());
 
-		getRemoteRepositories()
+		getRemoteRepositories("maven")
 
 			.thenApply(this::getItemsFrom)
 
 			.thenApply(this::filterDisabledRemoteStores)
 
-//		.thenApply(el -> printElements(el))
-
 			.thenCompose(this::getBrowsedStores)
 
-//			.thenApply(el -> printElements(el))
+//			.thenApplyAsync(this::printElements)
 
-
-//			.whenComplete((el,t) -> processForContent(el))
-
-//			.thenCompose(this::processForContent)
-
-
+			.thenCompose(this::processBrowsedStores)
 
 			.exceptionally((throwable) -> {
 
@@ -98,6 +88,23 @@ public class LoopScheduler {
 				return null;
 			})
 		;
+
+//		WebClient client = WebClient.create(vertx,new WebClientOptions().setDefaultPort(80).setDefaultHost("indy-admin-master-devel.psi.redhat.com"));
+//		Flowable<JsonObject> indyRemoteRepoFlow =
+//			client.get("/api/admin/stores/maven/remote")
+//			.basicAuthentication("","")
+//			.rxSend().map(HttpResponse::bodyAsJsonObject).toFlowable();
+//
+//		Flowable<JsonObject> indyBrowsedStoreFlow =
+//			client.get("/api/browse/maven/remote/central")
+//			.basicAuthentication("","")
+//			.rxSend().map(HttpResponse::bodyAsJsonObject).toFlowable();
+//
+//		indyRemoteRepoFlow.subscribe(content -> System.out.println("Content: " + content),
+//										err -> System.out.println("Cannot read content: " + err.getMessage()));
+//		indyBrowsedStoreFlow.subscribe(content -> System.out.println("Content: " + content),
+//										err -> System.out.println("Cannot read the file: " + err.getMessage()));
+
 	}
 
 	// Functional Methods
@@ -110,21 +117,18 @@ public class LoopScheduler {
 		return items.get("items");
 	}
 
-	public List<RemoteRepository> printElements(List<RemoteRepository> le) {
-		for(RemoteRepository bs : le) {
-			logger.log(Level.INFO, "Repo: {0} , Disabled: {1}", new Object[] {bs.getName(),bs.getDisabled()});
+	public List<BrowsedStore> printElements(List<BrowsedStore> le) {
+		for(BrowsedStore bs : le) {
+			logger.log(Level.INFO, "Content: {0} , ListingUrls: {1}", new Object[] {bs.getStoreKey(),bs.getListingUrls()});
 		}
 		return le;
 	}
 
-	public BrowsedStore processBrowsedStore(BrowsedStore store) {
-
+	public List<ListingUrls> processBrowsedStore(BrowsedStore store) {
 		logger.log(Level.INFO, "[[PROCESSING.STORE]] {0}", store.getStoreKey());
-		if(Objects.isNull( store) ) {
-			return new BrowsedStore();
-		}
-		List<ListingUrls> newListingUrls =
-			store.getListingUrls()
+		return
+			store
+				.getListingUrls()
 				.parallelStream()
 				.map(lu -> {
 					String previousPathUrl = lu.getListingUrl().split(lu.getPath())[0];
@@ -133,13 +137,21 @@ public class LoopScheduler {
 					lu.setContentUrl(fetchedUrl);
 					return lu;
 				})
-//					.collect(Collectors.toCollection(() -> store.getListingUrls()))
 					.collect(Collectors.toList())
 		;
-		cache.getBrowsedStores().add(store);
-//			store.getListingUrls().clear();
-//			store.getListingUrls().addAll(newListingUrls);
-		return store;
+	}
+
+	CompletableFuture<List<ListingUrls>> processBrowsedStores(List<BrowsedStore> browsedStores) {
+    	return CompletableFuture.supplyAsync(new Supplier<List<ListingUrls>>() {
+			@Override
+			public List<ListingUrls> get() {
+				return browsedStores
+							.parallelStream()
+							.flatMap(bs -> processBrowsedStore(bs).stream())
+							.collect(Collectors.toList())
+				;
+			}
+		});
 	}
 
 	public boolean checkMalformedUrl(String url) {
@@ -157,7 +169,7 @@ public class LoopScheduler {
 
 		if(rS != null && !rS.endsWith("/")) {
 			logger.log(Level.INFO, "[[CONTENT.URL]] {0}", rS);
-			cache.getContentUrls().add(rS);
+//			cache.getContentUrls().add(rS);
 			return rS;
 		}
 //		logger.log(Level.INFO, "[[CLIENT.URL]] {0}", rS);
@@ -167,26 +179,31 @@ public class LoopScheduler {
 			.header(AUTHORIZATION, auth)
 			.rx()
 			.get(Response.class)
+			.toCompletableFuture()
 			.whenCompleteAsync(((response, throwable) -> {
 				if(throwable != null) {
 					logger.info("EXCEPTION IN RESPONSE");
 				} else {
 					if(response.getStatus() < 400) {
 						String contentType = response.getHeaderString(HttpHeaders.CONTENT_TYPE);
-						if(KnownConstants.HEADER_VALUES.contains(contentType)) {
-							BrowsedStore browsedStore = response.readEntity(BrowsedStore.class);
-							browsedStore.getListingUrls().get(index).setContentUrl(browsedStore.getListingUrls().get(index).getListingUrl());
-							logger.log(Level.INFO, "[[STORED.CONTENT.URL]] {0}", browsedStore);
-						}
 						BrowsedStore browsedStore = response.readEntity(BrowsedStore.class);
-						String listingUrl = browsedStore.getListingUrls().get(index).getListingUrl();
 
-						recursiveFetchContentUrl(browsedStore.getListingUrls().get(index).getListingUrl(), listingUrl.split(browsedStore.getPath())[0],index);
+//						if(KnownConstants.HEADER_VALUES.contains(contentType)) {
+//							browsedStore.getListingUrls().get(index).setContentUrl(browsedStore.getListingUrls().get(index).getListingUrl());
+//							logger.log(Level.INFO, "[[STORED.CONTENT.URL]] {0}", browsedStore);
+//						} else {
+							String listingUrl = browsedStore.getListingUrls().get(index).getListingUrl();
+							recursiveFetchContentUrl(
+								browsedStore.getListingUrls().get(index).getListingUrl(),
+								listingUrl.split(browsedStore.getPath())[0],index
+							);
+//						}
+
 					} else {
 						logger.log(Level.INFO, "[[Response.BrowsedStore.BAD]] {0}", response.readEntity(BrowsedStore.class).getStoreKey());
 					}
 				}
-			}))
+			})).join()
 		;
 
 
@@ -197,7 +214,6 @@ public class LoopScheduler {
     	cache.getBrowsedStores().add(bs);
     	return bs;
 	}
-
 
 	// TEST
 	CompletableFuture<Stream<BrowsedStore>> test(List<BrowsedStore> bs) {
@@ -210,12 +226,12 @@ public class LoopScheduler {
 	}
 
 	// CompletableFuture of RemoteRepositories
-	CompletableFuture<Map<String, List<RemoteRepository>>> getRemoteRepositories() {
+	CompletableFuture<Map<String, List<RemoteRepository>>> getRemoteRepositories(String packageType) {
 		return CompletableFuture.supplyAsync(new Supplier<Map<String, List<RemoteRepository>>>() {
 			@Override
 			public Map<String, List<RemoteRepository>> get() {
 				logger.info(">>> Fettching RemoteRepository: ");
-				return repositoriesService.getRemoteRepos("maven");
+				return repositoriesService.getRemoteRepos(packageType);
 			}
 		});
 	}
@@ -228,33 +244,25 @@ public class LoopScheduler {
 				logger.info(">>>>> Fetching BrowsedStore");
 				return remoteRepos
 					.parallelStream()
-//					.stream()
 					.map(repo -> repositoriesService.getBrowsedStoreByPackageType(repo.getPackageType(), repo.getName()))
-					.filter(bs -> {
-						try {
-//							logger.log(Level.INFO, "[[BrowsedStore.EMPTY]] {0} {1}",new Object[] {bs.toCompletableFuture().get().getListingUrls().isEmpty(),bs.toCompletableFuture().get().getStoreKey()});
-							return !bs.toCompletableFuture().get().getListingUrls().isEmpty();
-						} catch (InterruptedException e) {} catch (ExecutionException e) {}
-						return true;
-					})
-					.map(
-						el -> {
-						try {
-							final BrowsedStore browsedStore = el.toCompletableFuture().get();
-//							logger.log(Level.INFO, "[[BrowsedStore]] {0}", browsedStore.getStoreKey());
-							return browsedStore;
-						} catch (InterruptedException e) {} catch (ExecutionException e) {}
-						el.exceptionally((throwable) -> {
-						    logger.log(Level.INFO, "[[Exception]]: {0}",throwable.getMessage());
-						    return new BrowsedStore();
-						});
-						return new BrowsedStore();
-					}
-					)
-					.map(bs -> processBrowsedStore(bs))
-
-//					.map(el -> addToBrowsedStoreCache(el))
-//					.collect(Collectors.toCollection(() -> cache.getBrowsedStores()))
+//					.filter(bs -> {
+//						try {
+////							logger.log(Level.INFO, "[[BrowsedStore.EMPTY]] {0} {1}",new Object[] {bs.toCompletableFuture().get().getListingUrls().isEmpty(),bs.toCompletableFuture().get().getStoreKey()});
+//							return !bs.toCompletableFuture().get().getListingUrls().isEmpty();
+//						} catch (InterruptedException e) {} catch (ExecutionException e) {}
+//						return true;
+//					})
+//					.map(el -> {
+//						try {
+//							return el.get();
+//						} catch (InterruptedException e) {} catch (ExecutionException e) {}
+//						el.exceptionally((throwable) -> {
+//						    logger.log(Level.INFO, "[[Exception]]: {0}",throwable.getMessage());
+//						    return new BrowsedStore();
+//						});
+//						return new BrowsedStore();
+//					})
+//					.flatMap(bs -> { return processBrowsedStore(bs).stream(); })
 					.collect(Collectors.toList())
 				;
 			}
@@ -262,20 +270,19 @@ public class LoopScheduler {
 	}
 
 	// CompletableFuture of ListingUrls
-	CompletableFuture<List<BrowsedStore>> processForContent(List<BrowsedStore> browsedStores) {
-		return CompletableFuture.supplyAsync(new Supplier<List<BrowsedStore>>() {
-			@Override
-			public List<BrowsedStore> get() {
-				logger.info(">>>>> Proccessing BrowsedStore");
-				return browsedStores
-						.parallelStream()
-//						.stream()
-						.map(bs -> processBrowsedStore(bs))
-						.collect(Collectors.toList())
-				;
-			}
-		});
-	}
+//	CompletableFuture<List<BrowsedStore>> processForContent(List<BrowsedStore> browsedStores) {
+//		return CompletableFuture.supplyAsync(new Supplier<List<BrowsedStore>>() {
+//			@Override
+//			public List<BrowsedStore> get() {
+//				logger.info(">>>>> Proccessing BrowsedStore");
+//				return browsedStores
+//						.parallelStream()
+//						.map(bs -> processBrowsedStore(bs))
+//						.collect(Collectors.toList())
+//				;
+//			}
+//		});
+//	}
 
 	// CompletableFuture of ContentUrls
 }

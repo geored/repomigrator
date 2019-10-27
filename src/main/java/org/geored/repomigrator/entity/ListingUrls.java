@@ -1,5 +1,7 @@
 package org.geored.repomigrator.entity;
 
+import io.vertx.codegen.annotations.DataObject;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -7,6 +9,8 @@ import java.util.List;
  *
  * @author gorgigeorgievski
  */
+
+@DataObject
 public class ListingUrls implements Serializable{
 
 	String path;

@@ -3,7 +3,9 @@ package org.geored.repomigrator.boundary.client.service;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.annotation.ClientHeaderParam;
+import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.geored.repomigrator.boundary.client.filters.DefaultRequestFilter;
 import org.geored.repomigrator.entity.RemoteRepository;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -29,6 +31,7 @@ import org.geored.repomigrator.entity.BrowsedStore;
 @RegisterRestClient(baseUri = "")
 @Produces(MediaType.APPLICATION_JSON)
 @ClientHeaderParam(name="Authorization",value = "")
+//@RegisterProvider(DefaultRequestFilter.class)
 public interface RemoteRepositoriesService {
 
 
@@ -40,7 +43,7 @@ public interface RemoteRepositoriesService {
 	@GET
 	@Path("/admin/stores/{packageType}/remote")
 	CompletionStage<Map<String,List<RemoteRepository>>> getRemoteReposAsync(
-	@PathParam("packageType") String packageType);
+	  @PathParam("packageType") String packageType);
 
     @GET
     @Path("/admin/stores/{packageType}/remote/{name}")
@@ -82,7 +85,7 @@ public interface RemoteRepositoriesService {
 
 	@GET
 	@Path("/browse/{packageType}/remote/{name}")
-	CompletionStage<BrowsedStore> getBrowsedStoreByPackageType(
+	BrowsedStore getBrowsedStoreByPackageType(
 		@PathParam("packageType") String packageType,
 		@PathParam("name") String name
 	);

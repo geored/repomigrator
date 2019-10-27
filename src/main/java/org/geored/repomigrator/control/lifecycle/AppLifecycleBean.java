@@ -22,7 +22,6 @@ public class AppLifecycleBean {
 
 	void onStop(@Observes ShutdownEvent event) {
 		logger.log(Level.INFO, "\n\t\t\t === [[SHUTDOWN]] @ {0} ===", LocalDateTime.now());
-//		appLifecycleEvent.fire(ProcessLifecycle.FINISH);
 	}
 
 }

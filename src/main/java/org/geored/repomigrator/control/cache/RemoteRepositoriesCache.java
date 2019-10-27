@@ -1,5 +1,6 @@
 package org.geored.repomigrator.control.cache;
 
+import io.reactivex.Flowable;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.geored.repomigrator.boundary.client.service.RemoteRepositoriesService;
@@ -17,10 +18,9 @@ import javax.inject.Inject;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +38,14 @@ public class RemoteRepositoriesCache implements Serializable {
 	// Browsed Remote Repositories Cache
 	public static Map<String, BrowsedStore> browsedRepos = new ConcurrentHashMap<>();
 
-//	CachedObservable<ListingUrls> listingUrlsCachedObservable = CachedObservable.
+	public static Queue<BrowsedStore> browsedStoreList = new ConcurrentLinkedQueue<BrowsedStore>();
+
+	public static Flowable<BrowsedStore> browsedStoreFlowable = Flowable.fromIterable(browsedStoreList);
+
+	public static List<URL> urlList = Collections.synchronizedList(new ArrayList<>());
+
+	public static Flowable<URL> urlsFlow = Flowable.fromIterable(urlList);
+
 
 	// Listing Urls Cache
 	public static Map<String, String> listedUrls = new ConcurrentHashMap<>();
@@ -126,6 +133,26 @@ public class RemoteRepositoriesCache implements Serializable {
 
 	}
 
+	public List<URL> getListingsUrls() {
+		return urlList;
+	}
+
+	public static Flowable<URL> getUrlsFlow() {
+		return urlsFlow;
+	}
+
+	public static void setUrlsFlow(Flowable<URL> urlsFlowable) {
+		RemoteRepositoriesCache.urlsFlow = urlsFlowable;
+	}
+
+
+	public static Flowable<BrowsedStore> getBrowsedStoreFlowable() {
+		return browsedStoreFlowable;
+	}
+
+	public static void setBrowsedStoreFlowable(Flowable<BrowsedStore> browsedStoreFlowable) {
+		RemoteRepositoriesCache.browsedStoreFlowable = browsedStoreFlowable;
+	}
 
 	public static List<BrowsedStore> getBrowsedStores() {
 		return browsedStores;

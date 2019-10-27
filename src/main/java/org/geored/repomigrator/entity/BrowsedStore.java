@@ -1,5 +1,7 @@
 package org.geored.repomigrator.entity;
 
+import io.vertx.codegen.annotations.DataObject;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -8,6 +10,8 @@ import java.util.List;
  * @author gorgigeorgievski
  */
 
+
+@DataObject
 public class BrowsedStore implements Serializable {
 
 	String storeKey;
@@ -16,9 +20,26 @@ public class BrowsedStore implements Serializable {
 	String storeContentUrl;
 	String baseBrowseUrl;
 	String baseContentUrl;
+
+	String parentUrl;
+	String parentPath;
 	
 	List<String> sources;
 	List<ListingUrls> listingUrls;
+
+
+	public BrowsedStore() {
+	}
+
+	public BrowsedStore(String storeKey, String path, String storeBrowseUrl, String storeContentUrl, String baseBrowseUrl, List<String> sources, List<ListingUrls> listingUrls) {
+		this.storeKey=storeKey;
+		this.path = path;
+		this.storeBrowseUrl = storeBrowseUrl;
+		this.storeContentUrl  = storeContentUrl;
+		this.baseBrowseUrl = baseBrowseUrl;
+		this.sources = sources;
+		this.listingUrls = listingUrls;
+	}
 
 	public String getStoreKey() {
 		return storeKey;
@@ -82,6 +103,22 @@ public class BrowsedStore implements Serializable {
 
 	public void setListingUrls(List<ListingUrls> listingUrls) {
 		this.listingUrls = listingUrls;
+	}
+
+	public String getParentUrl() {
+		return parentUrl;
+	}
+
+	public void setParentUrl(String parentUrl) {
+		this.parentUrl = parentUrl;
+	}
+
+	public String getParentPath() {
+		return parentPath;
+	}
+
+	public void setParentPath(String parentPath) {
+		this.parentPath = parentPath;
 	}
 
 	@Override
